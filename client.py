@@ -38,13 +38,15 @@ def send_get_request(host, port, path):
 
 def main(ip, port, analysis, output):
     if analysis == '1':
-        data = send_get_request(ip, port, '/api/rank/sunk?limit=50&start=1')
+        data = send_get_request(ip, port, '/api/rank/sunk?limit=50&start=1')#WORKING
+        #TODO: CSV ANALISE
         with open(output, 'w', newline='') as f:
             writer = csv.writer(f)
             for game in data['games']:
                 writer.writerow([game['game_stats']['sunk'], game['game_stats']['average_sunk']])
     elif analysis == '2':
-        data = send_get_request(ip, port, '/api/rank/escaped?limit=50&start=1')
+        data = send_get_request(ip, port, '/api/rank/escaped?limit=50&start=1')#WORKING
+        #TODO: CSV ANALISE
         with open(output, 'w', newline='') as f:
             writer = csv.writer(f)
             for game in data['games']:
