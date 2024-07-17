@@ -37,25 +37,31 @@ def send_get_request(host, port, path):
 
 
 def main(ip, port, analysis, output):
+    data = None
+
     if analysis == '1':
-        data = send_get_request(ip, port, '/api/rank/sunk?limit=50&start=1')#WORKING
-        #TODO: CSV ANALISE
-        with open(output, 'w', newline='') as f:
-            writer = csv.writer(f)
-            for game in data['games']:
-                writer.writerow([game['game_stats']['sunk'], game['game_stats']['average_sunk']])
+        data = send_get_request(ip, port, '/api/rank/sunk?limit=50&start=1')
     elif analysis == '2':
-        data = send_get_request(ip, port, '/api/rank/escaped?limit=50&start=1')#WORKING
-        #TODO: CSV ANALISE
-        with open(output, 'w', newline='') as f:
-            writer = csv.writer(f)
-            for game in data['games']:
-                writer.writerow([game['game_stats']['normalized_cannon_placement'], game['game_stats']['average_escaped']])
+        data = send_get_request(ip, port, '/api/rank/escaped?limit=50&start=1')
     else:
         print("Invalid analysis type. Please select 1 or 2.")
+        return
 
+    if not data or 'games' not in data or not len(data['games']):
+        print("No data returned from request. Aborting.")
+        return
+
+    with open(output, 'w', newline='') as f:
+        writer = csv.writer(f)
+        for game in data['games']:
+            if analysis == '1':
+                ##TODO: ANALISAR RESULTADO E GERAR CSV
+                return
+            elif analysis == '2':
+                ##TODO: ANALISAR RESULTADO E GERAR CSV
+                return
 if __name__ == '__main__':
     if len(sys.argv) != 5:
-        print("Usage: ./client <IP> <port> <analysis> <output>")
+        print("Usage: <IP> <port> <analysis> <output>")
     else:
         main(sys.argv[1], int(sys.argv[2]), sys.argv[3], sys.argv[4])
