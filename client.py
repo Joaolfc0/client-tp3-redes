@@ -2,6 +2,7 @@ import sys
 import csv
 import socket
 import json
+from collections import defaultdict
 
 def send_get_request(host, port, path):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -36,30 +37,59 @@ def send_get_request(host, port, path):
             sock.close()
 
 
+def get_data(host, port, path):
+    start = 1
+    limit = 50
+    final_data = []
+
+    while start < 101:
+        data = send_get_request(host, port, f'{path}&start={start}&limit={limit}')
+        if data is not None and 'games' in data:
+            final_data.extend(data['games'])
+            start += limit
+        else:
+            break
+
+    return final_data
+
+def get_gas_data(data):
+    gas_data = {}
+
+    for game in data:
+        if game['auth'] not in gas_data:
+            gas_data[game['auth']] = {'game_count': 1, 'total_sunk_ships': game['sunk_ships']}
+        else:
+            gas_data[game['auth']]['game_count'] += 1
+            gas_data[game['auth']]['total_sunk_ships'] += game['sunk_ships']
+
+    for value in gas_data.values():
+        value['average_sunk_ships'] = value['total_sunk_ships'] / value['game_count']
+
+    return gas_data
+
+def generate_csv(gas_data, output_file):
+    with open(output_file, 'w') as f:
+        writer = csv.writer(f)
+        for gas, game_data in gas_data.items():
+            writer.writerow([gas, game_data['game_count'], game_data['average_sunk_ships']])
+
 def main(ip, port, analysis, output):
     data = None
 
     if analysis == '1':
-        data = send_get_request(ip, port, '/api/rank/sunk?limit=50&start=1')
+        path = '/api/rank/sunk?'
+        data = get_data(ip, port, path)
+        gas_data = get_gas_data(data)
+        generate_csv(gas_data, output)
+
+
     elif analysis == '2':
-        data = send_get_request(ip, port, '/api/rank/escaped?limit=50&start=1')
+        # TODO
+        pass
     else:
         print("Invalid analysis type. Please select 1 or 2.")
         return
 
-    if not data or 'games' not in data or not len(data['games']):
-        print("No data returned from request. Aborting.")
-        return
-
-    with open(output, 'w', newline='') as f:
-        writer = csv.writer(f)
-        for game in data['games']:
-            if analysis == '1':
-                ##TODO: ANALISAR RESULTADO E GERAR CSV
-                return
-            elif analysis == '2':
-                ##TODO: ANALISAR RESULTADO E GERAR CSV
-                return
 if __name__ == '__main__':
     if len(sys.argv) != 5:
         print("Usage: <IP> <port> <analysis> <output>")
