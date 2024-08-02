@@ -3,7 +3,7 @@ import csv
 import socket
 import json
 from collections import defaultdict
-
+import numpy as np
 
 def send_get_request(host, port, path):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -77,10 +77,14 @@ def get_gas_data(data):
 
 
 def normalize_cannon_placements(cannon_data):
-    cannon_counts = [0] * 8
+    cannon_map=np.zeros((8,5),dtype=np.uint8)
     for row in cannon_data:
-        cannon_counts[len(row) - 1] += 1
-    return ''.join(map(str, cannon_counts))
+        cannon_map[row[0]-1,row[1]] += 1
+    cannon_counts=np.sum(cannon_map,axis=0)
+    count_occurrences=np.zeros((8),dtype=np.uint8)
+    for c in cannon_counts:
+        count_occurrences[c]+=1
+    return ''.join(map(str, count_occurrences))
 
 
 def generate_csv(gas_data, output_file):
