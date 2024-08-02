@@ -86,7 +86,9 @@ def normalize_cannon_placements(cannon_data):
 def generate_csv(gas_data, output_file):
     with open(output_file, 'w') as f:
         writer = csv.writer(f)
-        for gas, game_data in gas_data.items():
+        items=list(gas_data.items())
+        items.sort(key=lambda x:-x[1]["game_count"])
+        for gas, game_data in items:
             writer.writerow([gas, game_data['game_count'],
                             game_data['average_sunk_ships']])
 
