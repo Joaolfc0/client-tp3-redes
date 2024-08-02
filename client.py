@@ -101,7 +101,7 @@ def main(ip, port, analysis, output):
         generate_csv(gas_data, output)
 
     elif analysis == '2':
-        path = '/api/rank/escaped?limit=50'
+        path = '/api/rank/escaped?'
         data = get_data(ip, port, path)
         cannon_stats = defaultdict(lambda: [0, 0])
 
